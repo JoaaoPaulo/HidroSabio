@@ -1,0 +1,1687 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HidroSábio ODS 6 - Sistema de Monitoramento Hídrico</title>
+    <!-- Importando folha de estilos compilada pelo Vite com o Tailwind v4 -->
+    <link rel="stylesheet" href="/src/index.css" />
+    <!-- Lucide Icons para carregar os ícones modernos de forma leve -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.435.0/dist/umd/lucide.min.js"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col md:flex-row antialiased">
+    
+    <!-- BARRA LATERAL (SIDEBAR NAVIGATION) -->
+    <aside id="sidebar" class="bg-blue-950 text-slate-100 w-full md:w-64 flex flex-col shrink-0 border-b md:border-b-0 md:border-r border-blue-900 z-10">
+      <!-- Header do Logo -->
+      <div class="p-6 border-b border-blue-900/60 flex items-center justify-between md:justify-start gap-3">
+        <div class="bg-sky-500 text-blue-950 p-2.5 rounded-xl shadow-lg shadow-sky-500/20 flex items-center justify-center animate-pulse-subtle">
+          <i data-lucide="droplets" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white">HidroSábio</h1>
+          <p class="text-xs text-sky-400 font-medium tracking-wider">ODS 6 • Gestão Ativa</p>
+        </div>
+        <!-- Menu Hamburger para Telas Móveis -->
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-sky-400" aria-label="Toggle Menu">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- Links de Navegação Lateral -->
+      <nav id="nav-links" class="flex-1 p-4 space-y-1.5 hidden md:block select-none">
+        <button onclick="switchView('inicio')" id="btn-view-inicio" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer text-sky-300 bg-blue-900/40 border-l-4 border-sky-400">
+          <i data-lucide="home" class="w-5 h-5 shrink-0"></i>
+          <span>Início & ODS 6</span>
+        </button>
+        <button onclick="switchView('dashboard')" id="btn-view-dashboard" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer text-slate-400 hover:text-white hover:bg-blue-900/40 border-l-4 border-transparent">
+          <i data-lucide="layout-dashboard" class="w-5 h-5 shrink-0"></i>
+          <span>Dashboard</span>
+        </button>
+        <button onclick="switchView('ambientes')" id="btn-view-ambientes" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer text-slate-400 hover:text-white hover:bg-blue-900/40 border-l-4 border-transparent">
+          <i data-lucide="cpu" class="w-5 h-5 shrink-0"></i>
+          <span>Sensor IoT & Ambientes</span>
+        </button>
+        <button onclick="switchView('historico')" id="btn-view-historico" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer text-slate-400 hover:text-white hover:bg-blue-900/40 border-l-4 border-transparent">
+          <i data-lucide="history" class="w-5 h-5 shrink-0"></i>
+          <span>Histórico</span>
+        </button>
+        <button onclick="switchView('relatorios')" id="btn-view-relatorios" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer text-slate-400 hover:text-white hover:bg-blue-900/40 border-l-4 border-transparent">
+          <i data-lucide="file-text" class="w-5 h-5 shrink-0"></i>
+          <span>Relatórios</span>
+        </button>
+      </nav>
+
+      <!-- Rodapé da Fila e ONU -->
+      <div class="p-4 border-t border-blue-900/60 hidden md:block">
+        <div class="bg-blue-900/30 rounded-xl p-3 text-center border border-sky-950/40">
+          <p class="text-[10px] text-sky-400 font-semibold tracking-widest uppercase">ODS 6 ONU</p>
+          <p class="text-xs text-slate-300 font-medium mt-1">Água Potável & Saneamento</p>
+          <div class="flex justify-center gap-1 mt-2.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400/50"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-sm shadow-blue-400/50"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-sky-400 shadow-sm shadow-sky-400/50"></span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL (MAIN PANEL) -->
+    <main class="flex-grow flex flex-col min-w-0 overflow-y-auto">
+      
+      <!-- TOP BAR DO DASHBOARD -->
+      <header class="bg-white border-b border-slate-200 py-3.5 px-6 shrink-0 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+          <span class="text-xl font-bold text-slate-800" id="current-view-title">Início & ODS 6</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <!-- Widget de Configuração Rápida de Moradores -->
+          <div class="hidden sm:flex bg-slate-100 hover:bg-slate-200/80 transition-colors px-3 py-1.5 rounded-xl text-xs font-semibold items-center gap-2 border border-slate-200">
+            <i data-lucide="users" class="w-3.5 h-3.5 text-blue-600"></i>
+            <span class="text-slate-600">Moradores:</span>
+            <span id="top-moradores-count" class="text-blue-900 font-bold bg-white px-1.5 py-0.5 rounded shadow-sm">3</span>
+          </div>
+          <!-- Notificação de Alertas Ativos -->
+          <div id="top-alerta-badge" class="flex bg-slate-100/90 text-slate-600 px-3 py-1.5 rounded-xl text-xs font-semibold items-center gap-1.5 cursor-pointer relative" onclick="switchView('dashboard')">
+            <span class="w-2 h-2 rounded-full bg-slate-400" id="top-alerta-dot"></span>
+            <span id="top-alerta-text">Selo Verde</span>
+          </div>
+          <!-- UTC Clock -->
+          <div class="text-xs bg-slate-100 text-slate-500 font-mono px-3 py-1.5 rounded-xl border border-slate-150 flex items-center gap-1.5">
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-500"></i>
+            <span id="live-clock">--:--:--</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTAINER DAS VISÕES (SPA MAIN WORKSPACE) -->
+      <div class="p-6 max-w-7xl w-full mx-auto flex-1">
+        
+        <!-- VISÃO 1: INÍCIO E ODS 6 (BEM-VINDO) -->
+        <section id="view-inicio" class="view-panel block space-y-6">
+          <!-- Banner Hero ODS 6 -->
+          <div class="relative bg-gradient-to-r from-blue-700 via-sky-600 to-cyan-600 text-white p-6 sm:p-8 rounded-3xl shadow-xl overflow-hidden">
+            <div class="absolute inset-0 bg-grid-white/[0.08] pointer-events-none"></div>
+            <!-- Círculos de água em overlay ambient -->
+            <div class="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-cyan-400/20 blur-2xl"></div>
+            <div class="absolute right-1/4 -top-10 w-32 h-32 rounded-full bg-blue-400/20 blur-xl"></div>
+            
+            <div class="relative z-10 max-w-2xl space-y-3.5">
+              <span class="inline-flex bg-white/25 text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full backdrop-blur-md">
+                ALINHAMENTO GLOBAL ONU
+              </span>
+              <h2 class="text-2xl sm:text-3.5xl font-extrabold tracking-tight leading-tight">
+                ODS 6: Água Potável e Saneamento
+              </h2>
+              <p class="text-sm leading-relaxed text-blue-50/95">
+                O Objetivo de Desenvolvimento Sustentável 6 visa assegurar a disponibilidade e a gestão sustentável da água e saneamento para todos. Este sistema atua preventivamente nas perdas de distribuição internas, identificando fluxos irracionais, anomalias e possíveis vazamentos invisíveis no seu próprio lar.
+              </p>
+              <div class="pt-2 flex flex-wrap gap-3">
+                <button onclick="switchView('ambientes')" class="bg-white text-blue-900 hover:bg-blue-50 transition w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-slate-900/10 cursor-pointer flex items-center justify-center gap-2">
+                  <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                  Adicionar Ambientes
+                </button>
+                <button onclick="switchView('dashboard')" class="bg-blue-800/60 hover:bg-blue-800/80 transition text-white border border-blue-500/30 w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold cursor-pointer flex items-center justify-center gap-2">
+                  <i data-lucide="trending-up" class="w-4 h-4"></i>
+                  Ver Dashboard Ativo
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARDS DE ENQUADRAMENTO E METAS DE ECONOMIA (PROPOSTA DE VALOR & BRASIL) -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- CONFIGURADOR INTERATIVO -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-2 mb-3">
+                  <div class="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                  </div>
+                  <h3 class="font-bold text-slate-800 text-sm tracking-tight">Configurações Base</h3>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed mb-4">
+                  Ajuste o perfil da sua residência para calibrar o economizômetro e as médias do SNIS.
+                </p>
+                <div class="space-y-3.5">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" for="input-moradores">Residentes na Habitação:</label>
+                    <div class="relative flex items-center">
+                      <input type="number" id="input-moradores" min="1" max="15" value="3" class="w-full text-xs font-semibold bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:outline-none p-2.5 rounded-xl transition" />
+                      <span class="absolute right-3 text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase">Pessoas</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" for="input-tarifa">Tarifa Média de Água/Esgoto:</label>
+                    <div class="relative flex items-center">
+                      <input type="number" id="input-tarifa" step="0.10" value="6.50" class="w-full text-xs font-semibold bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:outline-none p-2.5 rounded-xl transition" />
+                      <span class="absolute right-3 text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold uppercase">R$ / 1.000 L</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="pt-4 mt-4 border-t border-slate-100">
+                <button onclick="salvarConfiguracoes()" class="w-full bg-blue-600 hover:bg-blue-700 transition text-white text-xs font-bold p-3 rounded-xl shadow-md shadow-blue-600/10 cursor-pointer flex items-center justify-center gap-2">
+                  <i data-lucide="save" class="w-4 h-4"></i>
+                  Salvar e Calibrar Monitor
+                </button>
+              </div>
+            </div>
+
+            <!-- ECONOMIZÔMETRO CENTRAL -->
+            <div id="economizometro-card" class="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-2xl shadow-sm border border-emerald-200/60 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <div class="p-2 bg-emerald-100 text-emerald-800 rounded-lg">
+                      <i data-lucide="leaf" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-sm tracking-tight">Economizômetro ODS 6</h3>
+                  </div>
+                  <span class="bg-emerald-200/60 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase" id="perfil-eco-badge">Eco-Parceiro</span>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed mb-4">
+                  Evite desperdícios! Confira abaixo sua economia estimada consolidada em comparação à média brasileira do SNIS (154L por pessoa ao dia).
+                </p>
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+                    <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Água Salva</p>
+                    <p class="text-xl sm:text-2xl font-extrabold text-emerald-800 mt-1" id="val-agua-salva">0 L</p>
+                    <p class="text-[9px] text-slate-400 mt-0.5">acumulados no sistema</p>
+                  </div>
+                  <div class="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+                    <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Gasto Evitado</p>
+                    <p class="text-xl sm:text-2xl font-extrabold text-emerald-800 mt-1" id="val-dinheiro-salvo">R$ 0,00</p>
+                    <p class="text-[9px] text-slate-400 mt-0.5">economia estimada</p>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-emerald-100 flex items-center justify-between bg-emerald-600/5 -mx-6 -mb-6 p-4 rounded-b-2xl">
+                <span class="text-[10px] text-emerald-700 font-bold flex items-center gap-1.5 leading-snug">
+                  <i data-lucide="check-circle" class="w-4 h-4"></i> Média Esperada SNIS: <span id="val-media-snis">-- L/dia</span>
+                </span>
+                <span class="text-[10px] text-slate-400">SNIS 2022</span>
+              </div>
+            </div>
+
+            <!-- PROPOSTA DE VALOR / CONSCIÊNCIA HÍDRICA -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-2 mb-3">
+                  <div class="p-2 bg-sky-100 text-sky-600 rounded-lg">
+                    <i data-lucide="heart" class="w-5 h-5"></i>
+                  </div>
+                  <h3 class="font-bold text-slate-800 text-sm tracking-tight">O Valor da Água</h3>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed space-y-2">
+                  Uma torneira pingando pode desperdiçar até 46 litros de água por dia. Isso significa 1.380 litros em um mês! O HidroSábio calcula automaticamente desvios significativos no padrão de uso de cada ambiente e dispara alertas imediatos para estancar o vazamento antes de impactar o seu orçamento e o meio ambiente.
+                </p>
+                <!-- Info extra -->
+                <div class="mt-4 bg-sky-50 border border-sky-100 p-3 rounded-xl flex items-center gap-2.5">
+                  <i data-lucide="info" class="w-4 h-4 text-sky-600 shrink-0"></i>
+                  <p class="text-[11px] text-sky-800 font-medium leading-relaxed">
+                    Você e <strong>HidroSábio</strong> protegendo ativamente os recursos hídricos globais das próximas gerações.
+                  </p>
+                </div>
+              </div>
+              <div class="mt-4 text-center">
+                <p class="text-[10px] text-slate-400 font-medium mt-auto">Meta 6.4: Melhorar a eficiência no uso de água.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- HISTÓRICO DE ANÁLISES RÁPIDAS -->
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 class="font-bold text-slate-800 text-sm tracking-tight mb-4 flex items-center gap-2">
+              <i data-lucide="help-circle" class="w-4 h-4 text-slate-500"></i> Como funciona nosso motor inteligente?
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-1">
+                <div class="text-xs font-bold text-blue-900 flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">1</span>
+                  Monitoramento por Cômodo
+                </div>
+                <p class="text-[11px] text-slate-500 leading-relaxed pl-7">
+                  Adicione ambientes personalizados e estipule limites arbitrários saudáveis de alertas fixos.
+                </p>
+              </div>
+              <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-1">
+                <div class="text-xs font-bold text-blue-900 flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">2</span>
+                  Detecção por Anomalia (20%)
+                </div>
+                <p class="text-[11px] text-slate-500 leading-relaxed pl-7">
+                  Se um consumo individual disparar acima de 20% da média das últimas 3 leituras, um alerta de vazamento na estrutura é gerado.
+                </p>
+              </div>
+              <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-1">
+                <div class="text-xs font-bold text-blue-900 flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">3</span>
+                  Fila FIFO de Atendimento
+                </div>
+                <p class="text-[11px] text-slate-500 leading-relaxed pl-7">
+                  Os alertas são adicionados de forma ordenada em uma Fila FIFO de contingência para que você possa mitigá-los em ordem cronológica de impacto.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VISÃO 2: DASHBOARD PRINCIPAL -->
+        <section id="view-dashboard" class="view-panel hidden space-y-6">
+          
+          <!-- KPIs PRINCIPAIS -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+              <div class="flex justify-between items-start">
+                <p class="text-xs font-bold text-slate-500 tracking-wider uppercase">Consumo Geral</p>
+                <div class="p-2 bg-blue-100 text-blue-600 rounded-xl">
+                  <i data-lucide="droplet" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="mt-2.5">
+                <p class="text-2.5xl font-extrabold text-slate-900 leading-none" id="kpi-consumo-total">0 L</p>
+                <div class="flex items-center gap-1.5 mt-2">
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-150" id="kpi-consumo-leituras-count">0 leituras</span>
+                  <span class="text-[10px] text-slate-400">no total</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+              <div class="flex justify-between items-start">
+                <p class="text-xs font-bold text-slate-500 tracking-wider uppercase">Custo Hídrico Est.</p>
+                <div class="p-2 bg-sky-100 text-sky-600 rounded-xl">
+                  <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="mt-2.5">
+                <p class="text-2.5xl font-extrabold text-slate-900 leading-none" id="kpi-custo-total">R$ 0,00</p>
+                <div class="flex items-center gap-1.5 mt-2">
+                  <span class="text-[10px] text-slate-400">com base em tarifa ativa</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200" id="kpi-alertas-card">
+              <div class="flex justify-between items-start">
+                <p class="text-xs font-bold text-slate-500 tracking-wider uppercase">Anomalias na Fila</p>
+                <div class="p-2 bg-amber-100 text-amber-600 rounded-xl" id="kpi-alerta-icon-box">
+                  <i data-lucide="bell-ring" class="w-4 h-4 animate-bounce"></i>
+                </div>
+              </div>
+              <div class="mt-2.5">
+                <p class="text-2.5xl font-extrabold text-slate-900 leading-none" id="kpi-alertas-count">0 Alertas</p>
+                <div class="flex items-center gap-1.5 mt-2">
+                  <span class="text-[10px] font-semibold text-slate-500" id="kpi-alertas-desc">Sem reparos pendentes</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+              <div class="flex justify-between items-start">
+                <p class="text-xs font-bold text-slate-500 tracking-wider uppercase">Eficiência vs SNIS</p>
+                <div class="p-2 bg-emerald-100 text-emerald-600 rounded-xl" id="kpi-eficiencia-icon-box">
+                  <i data-lucide="trending-down" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="mt-2.5">
+                <p class="text-2.5xl font-extrabold text-slate-900 leading-none" id="kpi-eficiencia-porcentagem">--%</p>
+                <div class="flex items-center gap-1.5 mt-2">
+                  <span class="text-[10px] text-slate-400" id="kpi-eficiencia-status">Cadastre leituras</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- GRÁFICO DE CONSUMO POR AMBIENTE (HTML/CSS BARS) -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <h3 class="font-bold text-slate-800 text-sm tracking-tight">Consumo Hidrológico por Ambiente</h3>
+                  <p class="text-xs text-slate-400 mt-0.5">Indicativo de consumo acumulativo diário contra limites de alerta individuais</p>
+                </div>
+                <div class="flex gap-2">
+                  <span class="text-[10px] font-bold px-2 py-1 rounded bg-slate-50 border border-slate-200 text-slate-500 flex items-center gap-1">
+                    <span class="w-2 h-2 rounded bg-sky-400 inline-block"></span> Normal
+                  </span>
+                  <span class="text-[10px] font-bold px-2 py-1 rounded bg-slate-50 border border-slate-200 text-slate-500 flex items-center gap-1">
+                    <span class="w-2 h-2 rounded bg-red-400 inline-block"></span> Alerta/Anômalo
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Container do Gráfico em barras CSS -->
+              <div class="relative bg-slate-50 rounded-2xl p-6 border border-slate-150 h-72 flex flex-col justify-between">
+                
+                <!-- Background grid lines -->
+                <div class="absolute inset-x-6 inset-y-8 flex flex-col justify-between pointer-events-none text-[9px] font-mono text-slate-300">
+                  <div class="border-b border-dashed border-slate-200 w-full text-right pr-2 select-none"><span id="chart-max-label">150 Litros</span></div>
+                  <div class="border-b border-dashed border-slate-200 w-full text-right pr-2 select-none">100 Litros</div>
+                  <div class="border-b border-dashed border-slate-200 w-full text-right pr-2 select-none">50 Litros</div>
+                  <div class="w-full text-right pr-2 select-none">0 Litros</div>
+                </div>
+
+                <!-- Live Bars viewport -->
+                <div class="flex-1 flex items-end justify-around relative z-10 h-44 pb-2" id="chart-bars-viewport">
+                  <!-- Injetado dinamicamente via JS -->
+                  <div class="text-center text-xs text-slate-400 py-10">Cadastre ambientes para ver o comparativo de barras de consumo hídrico de sua residência.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- FILA DE ALERTAS DE ANOMALIA (FIFO) -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="p-2 bg-amber-50 text-amber-700/90 rounded-lg border border-amber-200/50">
+                      <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-sm tracking-tight">Fila de Alertas (FIFO)</h3>
+                  </div>
+                  <span class="bg-blue-100 text-slate-800 text-[9px] font-bold px-2 py-0.5 rounded-full select-none" title="Fila de atendimento FIFO">Queue FIFO</span>
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed mb-4">
+                  Os alertas são enfileirados por ordem cronológica automática. Atenda o evento de vazamento mais antigo para remover da lista.
+                </p>
+
+                <!-- Área da Fila -->
+                <div class="space-y-2.5 max-h-56 overflow-y-auto pr-1" id="alerts-queue-container">
+                  <!-- Injetado dinamicamente -->
+                  <div class="text-center py-6 text-slate-400 text-xs">
+                    <i data-lucide="check-circle" class="w-6 h-6 mx-auto mb-2 text-emerald-500 opacity-60"></i>
+                    Tudo seguro. Fila de alertas vazia!
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-4 border-t border-slate-150">
+                <button onclick="resolverAlertaAntigo()" id="btn-resolver-alert" class="w-full bg-slate-100 hover:bg-emerald-500 hover:text-white transition-all text-slate-600 text-xs font-bold p-3 rounded-xl cursor-pointer flex items-center justify-center gap-2 border border-slate-200/60 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <i data-lucide="wrench" class="w-4 h-4"></i>
+                  Mitigar Alerta Mais Antigo (FIFO)
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- NOTIFICAÇÃO TOAST EMBUTIDA -->
+          <div id="toast" class="hidden fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 transform translate-y-12 opacity-0 z-50">
+            <div id="toast-icon-bg" class="p-1 rounded-full bg-blue-500 text-white">
+              <i data-lucide="info" class="w-4 h-4" id="toast-icon"></i>
+            </div>
+            <span id="toast-message" class="text-xs font-semibold">Mensagem do sistema</span>
+          </div>
+
+        </section>
+
+        <!-- VISÃO 3: CADASTRO DE AMBIENTES E SIMULAÇÃO DE SENSORES -->
+        <section id="view-ambientes" class="view-panel hidden space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- FORMULÁRIO 1: ADICIONAR AMBIENTE -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+              <div class="flex items-center gap-2 mb-4">
+                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
+                  <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800 text-sm tracking-tight">Cadastrar Novo Ambiente</h3>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Cadastre o cômodo e estipule um limite fixo diário recomendado em litros</p>
+                </div>
+              </div>
+
+              <form id="form-add-ambiente" onsubmit="event.preventDefault(); submeterNovoAmbiente();" class="space-y-4">
+                <!-- Chips sugestivos de ambiente -->
+                <div>
+                  <span class="block text-xs font-semibold text-slate-500 mb-2">Sugestões de Cômodos:</span>
+                  <div class="flex flex-wrap gap-1.5" id="suggestive-chips">
+                    <button type="button" onclick="preencherSugestao('Área de Serviço', 95)" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-blue-400 hover:text-blue-600 bg-slate-50 cursor-pointer transition">🧺 Área de Serviço (95L)</button>
+                    <button type="button" onclick="preencherSugestao('Banheiro Suíte', 120)" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-blue-400 hover:text-blue-600 bg-slate-50 cursor-pointer transition">🛁 Banheiro Suíte (120L)</button>
+                    <button type="button" onclick="preencherSugestao('Cozinha Copa', 75)" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-blue-400 hover:text-blue-600 bg-slate-50 cursor-pointer transition">🍳 Cozinha Copa (75L)</button>
+                    <button type="button" onclick="preencherSugestao('Irrigação Jardim', 140)" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-blue-400 hover:text-blue-600 bg-slate-50 cursor-pointer transition">🌳 Jardim (140L)</button>
+                    <button type="button" onclick="preencherSugestao('Área Gourmet', 80)" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-blue-400 hover:text-blue-600 bg-slate-50 cursor-pointer transition">🥩 Área Gourmet (80L)</button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" for="env-name">Nome do Ambiente:</label>
+                    <input type="text" id="env-name" placeholder="Ex: Lavanderia" required class="w-full text-xs font-semibold bg-slate-50 border border-slate-200 focus:border-blue-500 focus:outline-none p-3 rounded-xl transition" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" for="env-threshold">Limite Alerta Fixo (Litros/dia):</label>
+                    <input type="number" id="env-threshold" placeholder="Ex: 100" min="5" value="100" required class="w-full text-xs font-semibold bg-slate-50 border border-slate-200 focus:border-blue-500 focus:outline-none p-3 rounded-xl transition" />
+                  </div>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 transition text-white text-xs font-bold p-3 rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2">
+                  <i data-lucide="plus" class="w-4 h-4"></i> Criar Ambiente
+                </button>
+              </form>
+            </div>
+
+            <!-- FORMULÁRIO 2: REGISTRAR CONSUMO (IoT SENSOR) -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+              <div class="flex items-center gap-2 mb-4">
+                <div class="p-2 bg-sky-50 text-sky-600 rounded-lg border border-sky-100">
+                  <i data-lucide="rss" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800 text-sm tracking-tight">Simulador de Sensor IoT (Consumo)</h3>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Emule o pulso de telemetria de um fluxômetro registrando o consumo instantâneo</p>
+                </div>
+              </div>
+
+              <form id="form-simulate-sensor" onsubmit="event.preventDefault(); submeterConsumoSensor();" class="space-y-4">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" for="sensor-env-select">Selecione o Ambiente:</label>
+                    <select id="sensor-env-select" required class="w-full text-xs font-semibold bg-slate-50 border border-slate-200 focus:border-blue-500 focus:outline-none p-3 rounded-xl transition cursor-pointer">
+                      <!-- Alimentado via JS -->
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1" for="sensor-usage-input">Volume Consumido (Litros):</label>
+                    <input type="number" id="sensor-usage-input" min="1" max="1000" value="35" class="w-full text-xs font-semibold bg-slate-50 border border-slate-200 focus:border-blue-500 focus:outline-none p-3 rounded-xl transition" />
+                  </div>
+                </div>
+
+                <!-- Atividades Predefinidas -->
+                <div>
+                  <span class="block text-xs font-semibold text-slate-500 mb-1.5">Atividades comuns de consumo:</span>
+                  <div class="flex flex-wrap gap-1.5">
+                    <button type="button" onclick="definirVolumeSensor(4, this)" class="activity-btn text-[10px] font-bold px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-sky-50 transition cursor-pointer">🚽 Descarga sanitária (4L)</button>
+                    <button type="button" onclick="definirVolumeSensor(10, this)" class="activity-btn text-[10px] font-bold px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-sky-50 transition cursor-pointer">🚰 Lavar Louças breve (10L)</button>
+                    <button type="button" onclick="definirVolumeSensor(45, this)" class="activity-btn text-[10px] font-bold px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-sky-50 transition cursor-pointer">🚿 Shower 5min (45L)</button>
+                    <button type="button" onclick="definirVolumeSensor(120, this)" class="activity-btn text-[10px] font-bold px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-sky-50 transition cursor-pointer">🧺 Lavadora ciclo (120L)</button>
+                    <button type="button" onclick="definirVolumeSensor(200, this)" class="activity-btn text-[10px] font-bold px-2 py-1.5 rounded-lg border border-slate-250 bg-red-50 text-red-650 hover:bg-red-100 transition cursor-pointer">⚠️ Volume Anômalo (200L)</button>
+                  </div>
+                </div>
+
+                <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 transition text-white text-xs font-bold p-3 rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2">
+                  <i data-lucide="radio" class="w-4 h-4 animate-pulse"></i> Transmitir Pulso Telemétrico
+                </button>
+              </form>
+            </div>
+
+          </div>
+
+          <!-- LISTA DOS CÔMODOS CADASTRADOS & STATUS DETALHADO -->
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex items-center justify-between mb-5">
+              <div>
+                <h3 class="font-bold text-slate-800 text-sm tracking-tight">Status e Limites dos Ambientes Ativos</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Visão consolidada dos cômodos controlados pelo HidroSábio</p>
+              </div>
+              <span id="ambientes-count-badge" class="bg-slate-100/90 text-slate-600 text-xs font-bold px-3 py-1 rounded-full border border-slate-200">3 Ambientes</span>
+            </div>
+
+            <!-- GRID DOS AMBIENTES -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="environments-cards-grid">
+              <!-- Injetado via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- VISÃO 4: HISTÓRICO DE CONSUMO COMPACTO -->
+        <section id="view-historico" class="view-panel hidden space-y-6">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            
+            <!-- HEADER DA LEITURA -->
+            <div class="p-6 border-b border-slate-150 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-50/50">
+              <div>
+                <h3 class="font-bold text-slate-800 text-base tracking-tight">Registro Consolidado de Histórico</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Leituras transmitidas pelos sensores IoT e armazenadas em lista estruturada</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- Filtro de Ambiente -->
+                <select id="filter-env" onchange="renderizarHistorico()" class="text-xs font-semibold bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 cursor-pointer">
+                  <option value="todos">Todos os Cômodos</option>
+                  <!-- Injetados dinamicamente -->
+                </select>
+                <!-- Filtro de Diagnóstico -->
+                <select id="filter-status" onchange="renderizarHistorico()" class="text-xs font-semibold bg-white border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500 cursor-pointer">
+                  <option value="todos">Todos os Diagnósticos</option>
+                  <option value="normal">Apenas Normais</option>
+                  <option value="anomalia">Apenas Anomalias / Vazamentos</option>
+                </select>
+                <!-- Limpar dados -->
+                <button onclick="limparHistoricoGeral()" class="text-xs bg-red-50 text-red-650 hover:bg-red-100 transition font-bold px-3 py-2 rounded-xl border border-red-100 flex items-center gap-1.5 cursor-pointer">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Limpar
+                </button>
+              </div>
+            </div>
+
+            <!-- TABELA REAL -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-150 bg-slate-100/50 text-[10px] uppercase tracking-wider text-slate-500 font-bold select-none">
+                    <th class="py-3.5 px-6">ID Telemetria</th>
+                    <th class="py-3.5 px-6">Data & Horário</th>
+                    <th class="py-3.5 px-6">Ambiente</th>
+                    <th class="py-3.5 px-6">Volume Medido</th>
+                    <th class="py-3.5 px-6">Custo Monetário</th>
+                    <th class="py-3.5 px-6">Diagnóstico do Motor</th>
+                  </tr>
+                </thead>
+                <tbody id="history-table-body" class="text-xs font-medium text-slate-700 divide-y divide-slate-100">
+                  <!-- Injetado dinamicamente -->
+                </tbody>
+              </table>
+              
+              <!-- Caso não possua registros -->
+              <div id="history-empty-state" class="hidden text-center py-16 text-slate-400 space-y-2">
+                <i data-lucide="folder-open" class="w-10 h-10 mx-auto text-slate-300"></i>
+                <p class="text-sm font-semibold">Nenhuma leitura encontrada com os parâmetros configurados.</p>
+                <p class="text-[11px] text-slate-400">Tente simular um consumo no menu "Sensor IoT".</p>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- VISÃO 5: GERADOR DE RELATÓRIOS -->
+        <section id="view-relatorios" class="view-panel hidden space-y-6">
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4 gap-4 mb-5">
+              <div>
+                <h3 class="font-bold text-slate-800 text-sm tracking-tight mb-0.5">Gerador de Relatórios Técnicos ODS 6</h3>
+                <p class="text-xs text-slate-400">Embelezamento textual e demonstrativos do monitoramento hídrico para exportação</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="copiarRelatorioTexto()" class="bg-slate-100 hover:bg-slate-200 transition text-slate-700 text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-1.5 border border-slate-205">
+                  <i data-lucide="copy" class="w-4 h-4"></i>
+                  <span id="copy-btn-text">Copiar</span>
+                </button>
+                <button onclick="baixarRelatorioArquivo()" class="bg-blue-600 hover:bg-blue-700 transition text-white text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-1.5 shadow-md shadow-blue-600/15">
+                  <i data-lucide="download" class="w-4 h-4"></i>
+                  Baixar TXT
+                </button>
+              </div>
+            </div>
+
+            <!-- Terminal do Relatório -->
+            <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-inner relative">
+              <span class="absolute top-4 right-4 bg-slate-800 text-sky-400 font-mono text-[9px] px-2 py-0.5 rounded uppercase border border-slate-700 select-none">CONSOLE OUTPUT</span>
+              <pre id="report-console-pre" class="text-[11.5px] font-mono text-slate-300 leading-relaxed overflow-x-auto whitespace-pre-wrap select-text h-96 pr-2">
+<!-- Carregando dinamicamente via script -->
+              </pre>
+            </div>
+
+            <!-- Meta descrições de dotação -->
+            <div class="mt-5 p-4 bg-blue-50 border border-blue-100/60 rounded-xl flex items-start gap-3">
+              <i data-lucide="info" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5 animate-bounce"></i>
+              <div class="space-y-1">
+                <p class="text-xs font-bold text-blue-900">Utilidade do Relatório:</p>
+                <p class="text-[11px] text-blue-800 leading-relaxed">
+                  Este relatório textual detalha o impacto de consumo por cômodo da casa, consolidando a auditoria hídrica de leituras anômalas mapeadas na fila FIFO. Você pode enviá-lo por e-mail, anexá-lo aos controles condominiais do seu edifício, ou exportá-lo diretamente como um backup estruturado.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- INICIALIZAÇÃO DO SCRIPT COMPLETO DO MONITOR -->
+    <script>
+      /************************************************************************
+       * 1. ESTRUTURA DE DADOS: FILA (QUEUE) PARA ALERTAS DE ANOMALIA
+       * Segue estritamente a orientação FIFO (First-In, First-Out).
+       * Utilizada para organizar alertas que exigem reparo cronológico.
+       ************************************************************************/
+      class FilaAlertas {
+        constructor() {
+          this.itens = [];
+        }
+
+        // Adiciona um alerta ao fim da fila (enqueue)
+        enqueue(alerta) {
+          this.itens.push(alerta);
+        }
+
+        // Remove e retorna o alerta mais antigo do início da fila (dequeue)
+        dequeue() {
+          if (this.isEmpty()) {
+            return null;
+          }
+          return this.itens.shift();
+        }
+
+        // Verifica de modo booleano se a fila de anomalia está vazia
+        isEmpty() {
+          return this.itens.length === 0;
+        }
+
+        // Retorna a quantidade de elementos acumulados na fila
+        size() {
+          return this.itens.length;
+        }
+
+        // Retorna uma cópia estruturada de todos os alertas
+        getQueue() {
+          return [...this.itens];
+        }
+
+        // Limpa a fila
+        clear() {
+          this.itens = [];
+        }
+      }
+
+
+      /************************************************************************
+       * 2. MODELAGEM ORIENTADA A OBJETOS: CLASSE AMBIENTE
+       * Modela cada ponto de dotação de água controlado.
+       ************************************************************************/
+      class Ambiente {
+        constructor(nome, limiteAlerta) {
+          this.nome = nome;                                // Atributo: nome descritivo do cômodo
+          this.limiteAlerta = Number(limiteAlerta);        // Atributo: limite fixo de litros estipulado
+          this.consumoDiario = 0;                          // Atributo: consumo acumulado diário corrente
+          this.historico = [];                             // Atributo: registros individuais estruturados
+        }
+
+        // Adiciona uma leitura isolada de consumo ao ambiente
+        adicionarLeitura(litros, custo) {
+          const novaLeitura = {
+            data: new Date(),
+            litros: Number(litros),
+            custo: Number(custo)
+          };
+          this.historico.push(novaLeitura);
+          this.consumoDiario += Number(litros);
+        }
+
+        // Retorna a média de consumo com base nas últimas 3 leituras isoladas
+        getMediaUltimos3() {
+          if (this.historico.length === 0) return 0;
+          const ultimas = this.historico.slice(-3);
+          const soma = ultimas.reduce((acc, curr) => acc + curr.litros, 0);
+          return soma / ultimas.length;
+        }
+      }
+
+
+      /************************************************************************
+       * 3. MODELAGEM ORIENTADA A OBJETOS: CLASSE SISTEMAMONITORAMENTO
+       * Controlador mestre da aplicação de gestão hídrica.
+       ************************************************************************/
+      class SistemaMonitoramento {
+        constructor() {
+          this.ambientes = [];                     // Lista de ambientes
+          this.alertasQueue = new FilaAlertas();   // Fila para registrar alertas na ordem de chegada
+          this.historicoGeral = [];                // Lista de consumo consolidada por ambiente
+          this.taxaAguaPorLitro = 0.0065;          // R$ 0,0065 por Litro (equivalente a R$6,50 por m³)
+          this.mediaBraSnis = 154;                 // Consumo médio brasileiro: 154L/pessoa/dia (SNIS 2022)
+          this.moradores = 3;                      // Número padrão de residentes para o economizômetro
+        }
+
+        // Define novas configurações de moradores e tarifa
+        atualizarConfiguracoes(moradores, tarifaPorMilLitros) {
+          this.moradores = Math.max(1, Number(moradores));
+          this.taxaAguaPorLitro = Number(tarifaPorMilLitros) / 1000;
+          
+          // Re-computar o custo total do histórico com a nova tarifa base
+          this.historicoGeral.forEach(reg => {
+            reg.custo = reg.litros * this.taxaAguaPorLitro;
+          });
+          
+          // Re-computar custos das leituras de cada ambiente individualmente
+          this.ambientes.forEach(amb => {
+            amb.historico.forEach(read => {
+              read.custo = read.litros * this.taxaAguaPorLitro;
+            });
+          });
+        }
+
+        // Método: adicionarAmbiente()
+        adicionarAmbiente(nome, limiteAlerta) {
+          const duplicado = this.ambientes.find(a => a.nome.toLowerCase() === nome.trim().toLowerCase());
+          if (duplicado) {
+            return false;
+          }
+          const novo = new Ambiente(nome.trim(), limiteAlerta);
+          this.ambientes.push(novo);
+          return true;
+        }
+
+        // Método: registrarConsumo()
+        registrarConsumo(nomeAmbiente, litros) {
+          const ambiente = this.ambientes.find(a => a.nome === nomeAmbiente);
+          if (!ambiente) return null;
+
+          litros = Number(litros);
+          const custo = litros * this.taxaAguaPorLitro;
+
+          // Verifica se há vazamentos ou sobre-excesso antes de registrar
+          const validacao = this.verificarVazamento(ambiente, litros);
+
+          // Registra a leitura no próprio objeto do ambiente
+          ambiente.adicionarLeitura(litros, custo);
+
+          // Cria a entrada de histórico estruturado para a lista consolidada
+          const registro = {
+            id: 'TEL-' + Math.floor(100000 + Math.random() * 900000),
+            data: new Date(),
+            ambiente: nomeAmbiente,
+            litros: litros,
+            custo: custo,
+            alertaVazamento: validacao.vazamento,
+            detalheAlerta: validacao.motivo
+          };
+
+          // Insere na lista organizada (Array)
+          this.historicoGeral.push(registro);
+
+          // Se for detectada anomalia, adiciona à fila de alertas FIFO
+          if (validacao.vazamento) {
+            this.alertasQueue.enqueue({
+              id: registro.id,
+              ambiente: nomeAmbiente,
+              litros: litros,
+              motivo: validacao.motivo,
+              data: registro.data
+            });
+          }
+
+          return registro;
+        }
+
+        // Método: verificarVazamento()
+        // Algoritmo: detecta vazamento quando o consumo excede 20% acima da média dos últimos 3 registros
+        verificarVazamento(ambiente, litros) {
+          let vazamento = false;
+          let motivo = "";
+
+          // Critério de limite estático diário estipulado
+          if (litros > ambiente.limiteAlerta) {
+            vazamento = true;
+            motivo = `Ultrapassou o limite máximo estipulado (${ambiente.limiteAlerta}L)`;
+          }
+
+          // Lógica por média móvel de 3 registros
+          const historicoAntigo = ambiente.historico;
+          if (historicoAntigo.length >= 3) {
+            const ultimos3 = historicoAntigo.slice(-3);
+            const soma = ultimos3.reduce((acc, curr) => acc + curr.litros, 0);
+            const media = soma / 3;
+            const limiteCalculado = media * 1.20; // +20%
+
+            if (litros > limiteCalculado) {
+              vazamento = true;
+              const desvio = (((litros - media) / media) * 100).toFixed(0);
+              const novaMotivacao = `Consumo (${litros}L) excedeu em +${desvio}% a média dos últimos 3 registros (${media.toFixed(1)}L)`;
+              motivo = motivo ? `${motivo} e ${novaMotivacao}` : novaMotivacao;
+            }
+          }
+
+          return { vazamento, motivo };
+        }
+
+        // Método: gerarRelatorio()
+        // Exibe o resumo detalhado no console texturizado
+        gerarRelatorio() {
+          const totalConsumido = this.historicoGeral.reduce((acc, curr) => acc + curr.litros, 0);
+          const custoTotal = totalConsumido * this.taxaAguaPorLitro;
+          const totalAlertas = this.alertasQueue.size();
+          const diasDinamicos = 1; // Simplificado para referenciar o dia corrente
+
+          let out = `========================================================================\n`;
+          out += `                  HIDROSÁBIO - RELATÓRIO DO MONITORAMENTO               \n`;
+          out += `                ODS 6 ORGANIZAÇÃO DAS NAÇÕES UNIDAS (ONU)                \n`;
+          out += `========================================================================\n`;
+          out += `Gerado em: ${new Date().toLocaleString('pt-BR')}\n`;
+          out += `Habitantes Cadastrados: ${this.moradores} morador(es)\n`;
+          out += `Preço Médio por Litro: R$ ${this.taxaAguaPorLitro.toFixed(5)} / L\n`;
+          out += `Diagnóstico Geral: ${totalAlertas > 0 ? "⚠️ ANOMALIA EM CURSO" : "✅ STATUS SEGURO"}\n`;
+          out += `------------------------------------------------------------------------\n\n`;
+
+          out += `1. DADOS DE CONSUMO CONSOLIDADO (SISTEMA):\n`;
+          out += ` - Total Consumido Acumulado: ${totalConsumido.toFixed(1)} Litros\n`;
+          out += ` - Custo Monetário Estimado: R$ ${custoTotal.toFixed(2)}\n`;
+          out += ` - Ambientes Controlados: ${this.ambientes.length}\n`;
+          out += ` - Telemetrias Registradas: ${this.historicoGeral.length}\n`;
+          out += ` - Alertas de Vazamento Ativos (Fila): ${totalAlertas} ocorrência(s)\n\n`;
+
+          out += `2. DIAGNÓSTICO DETALHADO DOS AMBIENTES:\n`;
+          if (this.ambientes.length === 0) {
+            out += ` [Nenhum ambiente cadastrado no sistema]\n`;
+          } else {
+            this.ambientes.forEach(amb => {
+              const totalAmb = amb.historico.reduce((acc, curr) => acc + curr.litros, 0);
+              const leiturasCount = amb.historico.length;
+              const mediaMovelStr = leiturasCount >= 3 ? `${amb.getMediaUltimos3().toFixed(1)} L` : "Aguardando mais leituras";
+              out += ` - ${amb.nome.toUpperCase()}:\n`;
+              out += `   * Consumo total: ${totalAmb.toFixed(1)} Litros (em ${leiturasCount} leituras)\n`;
+              out += `   * Limite de Alerta Definido: ${amb.limiteAlerta} Litros\n`;
+              out += `   * Média de padrão (Últimos 3): ${mediaMovelStr}\n`;
+            });
+          }
+
+          out += `\n3. FILA DE CONTINGÊNCIA DE VAZAMENTO PENDENTE (FIFO):\n`;
+          if (this.alertasQueue.isEmpty()) {
+            out += ` [Nenhum alerta pendente. Todos os vazamentos foram mitigaos!]\n`;
+          } else {
+            const queueItems = this.alertasQueue.getQueue();
+            queueItems.forEach((alerta, idx) => {
+              out += `  * Alerta [FIFO #${idx + 1}] | ID: ${alerta.id}\n`;
+              out += `    - Ambiente: ${alerta.ambiente}\n`;
+              out += `    - Litros na Anomalia: ${alerta.litros} L\n`;
+              out += `    - Descrição: ${alerta.motivo}\n`;
+              out += `    - Data Ocorrência: ${alerta.data.toLocaleTimeString('pt-BR')}\n`;
+            });
+          }
+
+          out += `\n4. PROPOSTA DE VALOR DA ECONOMIZAÇÃO (CONSCIÊNCIA ODS 6):\n`;
+          const metaSnisTotal = this.moradores * this.mediaBraSnis * diasDinamicos;
+          const diferenca = metaSnisTotal - totalConsumido;
+          
+          if (diferenca > 0) {
+            out += ` - Você está poupando ${diferenca.toFixed(1)} Litros comparado à média do brasileiro (SNIS).\n`;
+            out += ` - Economia financeira de R$ ${(diferenca * this.taxaAguaPorLitro).toFixed(2)} acumulada.\n`;
+            out += ` - Classificação Eco: PARCEIRO EXCEPCIONAL DA ODS 6\n`;
+          } else if (diferenca < 0) {
+            out += ` - Consumo excedeu em ${Math.abs(diferenca).toFixed(1)} Litros do teto nacional SNIS de 154L/habitante.\n`;
+            out += ` - Atenda as anomalias o mais breve para conter o desperdício monetário.\n`;
+            out += ` - Classificação Eco: ALERTA DE INSPEÇÃO URGENTE\n`;
+          } else {
+            out += ` - O consumo equipara-se à meta exata nacional.\n`;
+          }
+          
+          out += `\n========================================================================\n`;
+          out += `   Sustentabilidade hídrica: preserve hoje para garantir o amanhã.     \n`;
+          out += `========================================================================`;
+          return out;
+        }
+      }
+
+      // INSTANCIAÇÃO GLOBAL DO SISTEMA DE MONITORAMENTO
+      const sistema = new SistemaMonitoramento();
+
+
+      /************************************************************************
+       * 4. SEEDING / SEMENTES DE INICIALIZAÇÃO DE DADOS MOCK (VIVO)
+       * Preenche o sistema com leituras reais do simulador para que não
+       * inicialize em branco e demonstre a detecção de vazamento perfeitamente.
+       ************************************************************************/
+      function semearDadosIniciais() {
+        // Criando ambientes base
+        sistema.adicionarAmbiente("Banheiro Suíte", 125);
+        sistema.adicionarAmbiente("Cozinha Copa", 80);
+        sistema.adicionarAmbiente("Irrigação Jardim", 150);
+
+        // Simulando leituras normais para estabelecer histórico para o banheiro (Fórmula das 3 leituras)
+        // Banheiro Suíte leituras estáveis de ducha
+        sistema.registrarConsumo("Banheiro Suíte", 75);
+        sistema.registrarConsumo("Banheiro Suíte", 72);
+        sistema.registrarConsumo("Banheiro Suíte", 78);
+        
+        // Cozinha Copa leituras estáveis de louça
+        sistema.registrarConsumo("Cozinha Copa", 40);
+        sistema.registrarConsumo("Cozinha Copa", 42);
+        sistema.registrarConsumo("Cozinha Copa", 38);
+
+        // Jardim histórico normal
+        sistema.registrarConsumo("Irrigação Jardim", 110);
+        sistema.registrarConsumo("Irrigação Jardim", 115);
+        sistema.registrarConsumo("Irrigação Jardim", 120);
+
+        // AGORA: Registramos leituras anômalas para testar o algoritmo de vazamento!
+        
+        // Banheiro Suíte: Média das anteriores é 75. Limite +20% é 90L.
+        // Se registrarmos 110L, acionará o algoritmo de 20% acima da média e o limite estático!
+        sistema.registrarConsumo("Banheiro Suíte", 110);
+
+        // Cozinha Copa: Média anterior é 40. Limite +20% é 48L.
+        // Se registrarmos 60L (abaixo do teto permanente de 80, mas acima de 20% da média móvel).
+        // Isso prova a detecção por desvio analítico fino!
+        sistema.registrarConsumo("Cozinha Copa", 60);
+      }
+
+
+      /************************************************************************
+       * 5. ENGENHARIA DE RENDERIZAÇÃO DA INTERFACE (JS + DOM)
+       * Funções que reagem às ações de clique e redesenham todo o dashboard.
+       ************************************************************************/
+
+      // Função para alternar de página na sidebar (Single Page Navigation)
+      function switchView(viewId) {
+        // Esconde todos os painéis
+        document.querySelectorAll('.view-panel').forEach(panel => {
+          panel.classList.add('hidden');
+          panel.classList.remove('block');
+        });
+
+        // Mostra o painel selecionado
+        const targetPanel = document.getElementById(`view-` + viewId);
+        if (targetPanel) {
+          targetPanel.classList.remove('hidden');
+          targetPanel.classList.add('block');
+        }
+
+        // Atualiza estilo visível dos botões na barra lateral
+        document.querySelectorAll('.nav-item').forEach(btn => {
+          btn.classList.remove('text-sky-300', 'bg-blue-900/40', 'border-sky-400');
+          btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-blue-900/40', 'border-transparent');
+        });
+
+        const activeBtn = document.getElementById(`btn-view-` + viewId);
+        if (activeBtn) {
+          activeBtn.classList.add('text-sky-300', 'bg-blue-900/40', 'border-sky-400');
+          activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-blue-900/40', 'border-transparent');
+        }
+
+        // Atualiza título da barra superior
+        const titles = {
+          'inicio': 'Início & Alinhamento ODS 6',
+          'dashboard': 'Painel de Controle e Recursos',
+          'ambientes': 'Sensores IoT e Ambientes',
+          'historico': 'Histórico Analítico de Consumo',
+          'relatorios': 'Exportação de Relatório'
+        };
+        document.getElementById('current-view-title').innerText = titles[viewId] || 'HidroSábio';
+
+        // Fecha menu de celular, se aberto
+        const navLinks = document.getElementById('nav-links');
+        if (!navLinks.classList.contains('hidden') && window.innerWidth < 768) {
+          navLinks.classList.add('hidden');
+        }
+
+        // Redesenha os elementos relativos à tela acionada
+        renderizarTelas();
+      }
+
+      // Calibra moradores e redesenha informações de economia
+      function salvarConfiguracoes() {
+        const moradoresInput = document.getElementById('input-moradores');
+        const tarifaInput = document.getElementById('input-tarifa');
+        
+        const moradores = Number(moradoresInput.value) || 3;
+        const tarifa = Number(tarifaInput.value) || 6.50;
+
+        sistema.atualizarConfiguracoes(moradores, tarifa);
+        
+        mostrarToast("Configurações calibradas com sucesso!", "success");
+        renderizarTelas();
+      }
+
+      // Função para definir volume instantâneo no formulário de sensor
+      function definirVolumeSensor(litros, botaoReferência) {
+        document.getElementById('sensor-usage-input').value = litros;
+        
+        // Efeito visual ativo nos botões de atividade comum
+        document.querySelectorAll('.activity-btn').forEach(btn => {
+          btn.classList.remove('bg-sky-100', 'text-sky-700', 'border-sky-300');
+        });
+        botaoReferência.classList.add('bg-sky-100', 'text-sky-700', 'border-sky-300');
+      }
+
+      // Preenche dados sugeridos no cadastro de ambiente
+      function preencherSugestao(nome, limite) {
+        document.getElementById('env-name').value = nome;
+        document.getElementById('env-threshold').value = limite;
+        mostrarToast(`Sugestão "${nome}" pré-carregada!`, "info");
+      }
+
+      // Cadastra novo ambiente a partir do formulário
+      function submeterNovoAmbiente() {
+        const nomeInput = document.getElementById('env-name');
+        const limiteInput = document.getElementById('env-threshold');
+
+        const nome = nomeInput.value;
+        const limite = Number(limiteInput.value);
+
+        if (!nome || limite <= 0) {
+          mostrarToast("Por favor, preencha todos os campos do cômodo.", "error");
+          return;
+        }
+
+        const sucesso = sistema.adicionarAmbiente(nome, limite);
+        if (sucesso) {
+          nomeInput.value = "";
+          limiteInput.value = "100";
+          mostrarToast(`Ambiente "${nome}" cadastrado com sucesso!`, "success");
+          
+          // Carregar no dropdown do simulador
+          popularDropdownAmbientes();
+          renderizarTelas();
+        } else {
+          mostrarToast(`O ambiente "${nome}" já existe.`, "error");
+        }
+      }
+
+      // Registra consumo via Sensor IoT
+      function submeterConsumoSensor() {
+        const selectEnv = document.getElementById('sensor-env-select');
+        const litrosInput = document.getElementById('sensor-usage-input');
+
+        const nomeAmbiente = selectEnv.value;
+        const litros = Number(litrosInput.value);
+
+        if (!nomeAmbiente || litros <= 0) {
+          mostrarToast("Erro ao transmitir telemetria. Verifique campos.", "error");
+          return;
+        }
+
+        const registro = sistema.registrarConsumo(nomeAmbiente, litros);
+        if (registro) {
+          if (registro.alertaVazamento) {
+            mostrarToast(`⚠️ ALERTA: Consumo elevado ou vazamento em "${nomeAmbiente}"!`, "error");
+          } else {
+            mostrarToast(`Telemetria registrada para "${nomeAmbiente}" (${litros}L).`, "success");
+          }
+          
+          renderizarTelas();
+        }
+      }
+
+      // Mitiga/resolve o alerta pendente mais antigo (Deenfileiramento / Dequeue)
+      function resolverAlertaAntigo() {
+        if (sistema.alertasQueue.isEmpty()) {
+          mostrarToast("Nenhum alerta pendente para mitigação.", "info");
+          return;
+        }
+
+        const resolvido = sistema.alertasQueue.dequeue();
+        if (resolvido) {
+          // Marcar no histórico geral que aquele alerta foi devidamente mitigado
+          const itemHistorico = sistema.historicoGeral.find(reg => reg.id === resolvido.id);
+          if (itemHistorico) {
+            itemHistorico.alertaVazamento = false;
+            itemHistorico.detalheAlerta = "Anomalia mitigada pelo proprietário.";
+          }
+          
+          mostrarToast(`Vazamento no ambiente "${resolvido.ambiente}" corrigido com sucesso!`, "success");
+          renderizarTelas();
+        }
+      }
+
+      // Limpa histórico geral de dotações
+      function limparHistoricoGeral() {
+        if (confirm("Tem certeza que deseja apagar todo o histórico de monitoramento?")) {
+          sistema.historicoGeral = [];
+          sistema.alertasQueue.clear();
+          sistema.ambientes.forEach(amb => {
+            amb.historico = [];
+            amb.consumoDiario = 0;
+          });
+          
+          mostrarToast("Histórico de telemetrias zerado.", "info");
+          renderizarTelas();
+        }
+      }
+
+      // Copia relatório textual do console para a área de transferência
+      function copiarRelatorioTexto() {
+        const textToCopy = sistema.gerarRelatorio();
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          const btnText = document.getElementById('copy-btn-text');
+          btnText.innerText = "Copiado!";
+          mostrarToast("Relatório copiado para a área de transferência!", "success");
+          setTimeout(() => {
+            btnText.innerText = "Copiar";
+          }, 2000);
+        }).catch(err => {
+          mostrarToast("Erro ao copiar o relatório técnico.", "error");
+        });
+      }
+
+      // Baixa relatório textual do console como arquivo físico .txt
+      function baixarRelatorioArquivo() {
+        const textToCopy = sistema.gerarRelatorio();
+        const blob = new Blob([textToCopy], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Relatorio_HidroSabio_ODS6_${Date.now()}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        mostrarToast("Relatório baixado com sucesso!", "success");
+      }
+
+      // Alimenta o dropdown seletor de sensores hídricos
+      function popularDropdownAmbientes() {
+        const selectElement = document.getElementById('sensor-env-select');
+        const filterSelect = document.getElementById('filter-env');
+        
+        // Guardar valor atual para não resetar se houver recarga
+        const selectedVal = selectElement.value;
+        const selectedFilterVal = filterSelect ? filterSelect.value : "todos";
+
+        // Dropdown do seletor
+        selectElement.innerHTML = "";
+        
+        // Dropdown de histórico
+        if (filterSelect) {
+          filterSelect.innerHTML = `<option value="todos">Todos os Cômodos</option>`;
+        }
+
+        if (sistema.ambientes.length === 0) {
+          selectElement.innerHTML = `<option value="">-- Cadastre um ambiente primeiro --</option>`;
+          return;
+        }
+
+        sistema.ambientes.forEach(amb => {
+          // Simulador
+          const opt = document.createElement('option');
+          opt.value = amb.nome;
+          opt.innerText = amb.nome;
+          selectElement.appendChild(opt);
+
+          // Filtro histórico
+          if (filterSelect) {
+            const optFilter = document.createElement('option');
+            optFilter.value = amb.nome;
+            optFilter.innerText = amb.nome;
+            filterSelect.appendChild(optFilter);
+          }
+        });
+
+        if (selectedVal && [...selectElement.options].some(o => o.value === selectedVal)) {
+          selectElement.value = selectedVal;
+        }
+        if (filterSelect && selectedFilterVal && [...filterSelect.options].some(o => o.value === selectedFilterVal)) {
+          filterSelect.value = selectedFilterVal;
+        }
+      }
+
+
+      /************************************************************************
+       * 6. REDESENHO INTEGRESAL (CONTROLLERS DE INTERAÇÃO COM A TELA)
+       ************************************************************************/
+      function renderizarTelas() {
+        // Obter métricas consolidadas
+        const totalConsumido = sistema.historicoGeral.reduce((acc, curr) => acc + curr.litros, 0);
+        const custoTotal = totalConsumido * sistema.taxaAguaPorLitro;
+        const alertasAtivos = sistema.alertasQueue.size();
+        
+        // 1. ATUALIZAR KPIs TOP BAR E WIDGETS GERAIS
+        document.getElementById('top-moradores-count').innerText = sistema.moradores;
+        
+        const topAlertaBadge = document.getElementById('top-alerta-badge');
+        const topAlertaDot = document.getElementById('top-alerta-dot');
+        const topAlertaText = document.getElementById('top-alerta-text');
+        
+        if (alertasAtivos > 0) {
+          topAlertaBadge.className = "flex bg-rose-50 text-rose-700 px-3 py-1.5 rounded-xl text-xs font-bold items-center gap-1.5 cursor-pointer border border-rose-250 animate-pulse";
+          topAlertaDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50";
+          topAlertaText.innerText = `${alertasAtivos} Vazamento(s)!`;
+        } else {
+          topAlertaBadge.className = "flex bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl text-xs font-semibold items-center gap-1.5 cursor-pointer border border-emerald-200";
+          topAlertaDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50";
+          topAlertaText.innerText = `Selo Saudável ODS`;
+        }
+
+        // 2. ECONOMIZÔMETRO CENTRAL
+        const metaSnisIdealDiaria = sistema.moradores * sistema.mediaBraSnis;
+        const economiaAgua = metaSnisIdealDiaria - totalConsumido;
+        const economiaFinanc = economiaAgua * sistema.taxaAguaPorLitro;
+
+        document.getElementById('val-agua-salva').innerText = `${Math.max(0, economiaAgua).toFixed(0)} L`;
+        document.getElementById('val-dinheiro-salvo').innerText = `R$ ${Math.max(0, economiaFinanc).toFixed(2)}`;
+        document.getElementById('val-media-snis').innerText = `${metaSnisIdealDiaria.toLocaleString('pt-BR')} L/dia`;
+
+        const badgeEco = document.getElementById('perfil-eco-badge');
+        const cardEco = document.getElementById('economizometro-card');
+        if (economiaAgua > 0) {
+          badgeEco.className = "bg-emerald-200 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase border border-emerald-300";
+          badgeEco.innerText = "Guardião da Água";
+          cardEco.className = "bg-gradient-to-br from-emerald-50/70 via-teal-50/30 to-white p-6 rounded-2xl shadow-sm border border-emerald-200/50 flex flex-col justify-between";
+        } else if (economiaAgua < 0) {
+          badgeEco.className = "bg-rose-200 text-rose-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase border border-rose-300 animate-pulse";
+          badgeEco.innerText = "Sobre do SNIS";
+          cardEco.className = "bg-gradient-to-br from-rose-50/70 via-amber-50/10 to-white p-6 rounded-2xl shadow-sm border border-rose-200/50 flex flex-col justify-between";
+        } else {
+          badgeEco.className = "bg-blue-100 text-slate-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase border border-blue-200";
+          badgeEco.innerText = "Moderado";
+          cardEco.className = "bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between";
+        }
+
+        // 3. ATUALIZAR KPIs REATIVOS DO DASHBOARD
+        const kpiConsumo = document.getElementById('kpi-consumo-total');
+        if (kpiConsumo) kpiConsumo.innerText = `${totalConsumido.toFixed(0)} Litros`;
+        
+        const kpiLcount = document.getElementById('kpi-consumo-leituras-count');
+        if (kpiLcount) kpiLcount.innerText = `${sistema.historicoGeral.length} leituras`;
+
+        const kpiCusto = document.getElementById('kpi-custo-total');
+        if (kpiCusto) kpiCusto.innerText = `R$ ${custoTotal.toFixed(2)}`;
+
+        const kpiAlertas = document.getElementById('kpi-alertas-count');
+        const kpiAlertasDesc = document.getElementById('kpi-alertas-desc');
+        const kpiAlertaCard = document.getElementById('kpi-alertas-card');
+        const kpiAlertaIcon = document.getElementById('kpi-alerta-icon-box');
+
+        if (kpiAlertas) {
+          kpiAlertas.innerText = `${alertasAtivos} Alerta(s)`;
+          if (alertasAtivos > 0) {
+            kpiAlertas.className = "text-2.5xl font-extrabold text-rose-700 leading-none";
+            kpiAlertasDesc.innerText = `O mais antigo: "${sistema.alertasQueue.getQueue()[0].ambiente}"`;
+            kpiAlertasDesc.className = "text-[10px] font-bold text-rose-500";
+            kpiAlertaCard.className = "bg-rose-50/40 p-5 rounded-2xl shadow-sm border border-rose-250 animate-pulse-subtle";
+            kpiAlertaIcon.className = "p-2 bg-rose-100 text-rose-600 rounded-xl";
+          } else {
+            kpiAlertas.className = "text-2.5xl font-extrabold text-slate-900 leading-none";
+            kpiAlertasDesc.innerText = `Sem vazamentos pendentes`;
+            kpiAlertasDesc.className = "text-[10px] text-slate-400";
+            kpiAlertaCard.className = "bg-white p-5 rounded-2xl shadow-sm border border-slate-200";
+            kpiAlertaIcon.className = "p-2 bg-slate-100 text-slate-400 rounded-xl";
+          }
+        }
+
+        // Eficiência vs Teto de 154 litros
+        const kpiEficienciaVal = document.getElementById('kpi-eficiencia-porcentagem');
+        const kpiEficienciaStatus = document.getElementById('kpi-eficiencia-status');
+        const kpiEfiIcon = document.getElementById('kpi-eficiencia-icon-box');
+
+        if (kpiEficienciaVal) {
+          if (totalConsumido === 0) {
+            kpiEficienciaVal.innerText = "--%";
+            kpiEficienciaStatus.innerText = "Aguardando leituras";
+            kpiEfiIcon.className = "p-2 bg-slate-100 text-slate-400 rounded-xl";
+          } else {
+            const desvioRatio = (totalConsumido / metaSnisIdealDiaria) * 100;
+            kpiEficienciaVal.innerText = `${desvioRatio.toFixed(0)}%`;
+            if (desvioRatio <= 65) {
+              kpiEficienciaStatus.innerText = "Altamente eficiente! Selo Azul";
+              kpiEficienciaStatus.className = "text-[10px] font-bold text-cyan-600";
+              kpiEfiIcon.className = "p-2 bg-cyan-100 text-cyan-600 rounded-xl";
+            } else if (desvioRatio <= 100) {
+              kpiEficienciaStatus.innerText = "Consumo moderado saudável";
+              kpiEficienciaStatus.className = "text-[10px] font-bold text-emerald-600";
+              kpiEfiIcon.className = "p-2 bg-emerald-100 text-emerald-600 rounded-xl";
+            } else {
+              kpiEficienciaStatus.innerText = "Desperdício acima da média SNIS!";
+              kpiEficienciaStatus.className = "text-[10px] font-bold text-red-500 animate-pulse";
+              kpiEfiIcon.className = "p-2 bg-red-100 text-red-550 rounded-xl";
+            }
+          }
+        }
+
+        // 4. ATUALIZAR GRÁFICO DIÁRIO EM BARRAS CSS
+        renderizarGraficoBarras();
+
+        // 5. ATUALIZAR FILA DE ALERTAS (FIFO CARD)
+        renderizarFilaAlertasCard();
+
+        // 6. ATUALIZAR GRID DE AMBIENTES CADASTRADOS & DROPDOWNS
+        renderizarGridAmbientes();
+        
+        // 7. HISTÓRICO DE LEITURAS EM TABELA
+        renderizarHistorico();
+
+        // 8. RELATÓRIO DO CONSOLE TEXTUAL
+        const consolePre = document.getElementById('report-console-pre');
+        if (consolePre) consolePre.innerText = sistema.gerarRelatorio();
+
+        // 9. Re-criar ícones lucide
+        setTimeout(() => {
+          lucide.createIcons();
+        }, 50);
+      }
+
+      // Função inteligente para desenhar gráfico flexível em barras pura CSS/HTML
+      function renderizarGraficoBarras() {
+        const viewport = document.getElementById('chart-bars-viewport');
+        if (!viewport) return;
+
+        if (sistema.ambientes.length === 0) {
+          viewport.innerHTML = `<div class="text-center text-xs text-slate-400 py-10 w-full">Cadastre ambientes para visualizar o comparativo hídrico residencial em barras.</div>`;
+          return;
+        }
+
+        viewport.innerHTML = "";
+
+        // Encontra o maior consumo para regular a proporção visual do gráfico de forma fluida
+        const consumos = sistema.ambientes.map(a => a.consumoDiario);
+        const maiorConsumo = Math.max(...consumos, 100); // Teto dinâmico de segurança de 100L
+
+        // Redimensionar labels de grid dinamicamente
+        document.getElementById('chart-max-label').innerText = `${maiorConsumo.toFixed(0)} Litros`;
+
+        sistema.ambientes.forEach(amb => {
+          const porcetVisual = (amb.consumoDiario / maiorConsumo) * 100;
+          
+          // Lógica de cores baseadas em alertas de anomalia estrutural
+          const temAnomalia = sistema.alertasQueue.getQueue().some(al => al.ambiente === amb.nome);
+          const barColorClass = temAnomalia 
+            ? "bg-gradient-to-t from-red-650 to-rose-400 shadow-md shadow-red-200" 
+            : (amb.consumoDiario > amb.limiteAlerta 
+                ? "bg-gradient-to-t from-amber-500 to-amber-400 shadow-md shadow-amber-200"
+                : "bg-gradient-to-t from-blue-600 to-sky-400 shadow-md shadow-blue-150");
+
+          const barItemHtml = `
+            <div class="flex flex-col items-center flex-1 h-full select-none max-w-[70px] group relative">
+              <div class="w-full flex-grow flex items-end justify-center relative pb-1">
+                <!-- Tooltip hover -->
+                <div class="absolute -top-12 scale-0 group-hover:scale-100 transition-all duration-150 bg-slate-950 text-white text-[10px] font-mono px-2 py-1 rounded shadow-lg z-20 whitespace-nowrap">
+                  Consumido: ${amb.consumoDiario.toFixed(0)}L / Alerta: ${amb.limiteAlerta}L
+                </div>
+                <!-- Barra animada -->
+                <div class="${barColorClass} w-5 sm:w-6.5 rounded-t-lg transition-all duration-700 ease-out flex items-center justify-center" style="height: ${Math.max(4, porcetVisual)}%">
+                  <span class="text-[8px] font-bold text-white mb-2 rotate-270 hidden sm:inline-block">${amb.consumoDiario > 18 ? amb.consumoDiario.toFixed(0) : ""}</span>
+                </div>
+              </div>
+              <div class="h-6 flex items-center justify-center">
+                <span class="text-[10px] font-bold text-slate-500 truncate max-w-[50px] sm:max-w-none" title="${amb.nome}">${amb.nome}</span>
+              </div>
+            </div>
+          `;
+          
+          const wrapper = document.createElement('div');
+          wrapper.className = "contents";
+          wrapper.innerHTML = barItemHtml;
+          viewport.appendChild(wrapper);
+        });
+      }
+
+      // Função para renderizar a fila de anomalia enfileirada no card FIFO
+      function renderizarFilaAlertasCard() {
+        const queueContainer = document.getElementById('alerts-queue-container');
+        const btnMitigate = document.getElementById('btn-resolver-alert');
+        
+        if (!queueContainer) return;
+
+        const filaCopy = sistema.alertasQueue.getQueue();
+
+        if (filaCopy.length === 0) {
+          queueContainer.innerHTML = `
+            <div class="text-center py-10 text-slate-400 text-xs">
+              <i data-lucide="check-circle" class="w-6 h-6 mx-auto mb-2 text-emerald-500 opacity-80"></i>
+              Excelente! Nenhum alerta de vazamento pendente na fila.
+            </div>
+          `;
+          if (btnMitigate) {
+            btnMitigate.disabled = true;
+            btnMitigate.className = "w-full bg-slate-150 text-slate-400 text-xs font-bold p-3 rounded-xl cursor-not-allowed border border-slate-200/50";
+          }
+          return;
+        }
+
+        // Habilita mitigação
+        if (btnMitigate) {
+          btnMitigate.disabled = false;
+          btnMitigate.className = "w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 transition-all text-xs font-bold p-3 rounded-xl cursor-pointer flex items-center justify-center gap-2";
+        }
+
+        queueContainer.innerHTML = "";
+        
+        filaCopy.forEach((alerta, index) => {
+          const isOldest = index === 0; // O primeiro elemento da fila FIFO é o mais antigo
+          const rowHtml = `
+            <div class="p-3 rounded-xl border flex items-center justify-between gap-3 shadow-sm transition ${isOldest ? 'bg-amber-50/70 border-amber-300 shadow-amber-200/10 animate-pulse' : 'bg-slate-50 border-slate-200/80'}">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="text-[9px] font-mono font-bold px-1.5 py-1 rounded ${isOldest ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-200 text-slate-600'}">
+                  ${isOldest ? 'MAIS ANTIGO' : '#' + (index + 1)}
+                </span>
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-slate-800 truncate">${alerta.ambiente}</p>
+                  <p class="text-[9.5px] text-slate-400 mt-0.5 truncate">${alerta.motivo}</p>
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="text-[10px] font-bold text-slate-700 bg-white border px-1.5 py-0.5 rounded">${alerta.litros} L</span>
+                <p class="text-[9px] text-slate-400 mt-0.5 font-mono">${alerta.data.toLocaleTimeString('pt-BR')}</p>
+              </div>
+            </div>
+          `;
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = rowHtml;
+          queueContainer.appendChild(wrapper.firstElementChild);
+        });
+      }
+
+      // Renderiza grid de ambientes cadastrados
+      function renderizarGridAmbientes() {
+        const grid = document.getElementById('environments-cards-grid');
+        const badgeCount = document.getElementById('ambientes-count-badge');
+        
+        if (!grid) return;
+
+        badgeCount.innerText = `${sistema.ambientes.length} Ambiente(s)`;
+
+        if (sistema.ambientes.length === 0) {
+          grid.innerHTML = `
+            <div class="text-center py-10 col-span-full text-slate-400 text-xs">
+              <i data-lucide="help-circle" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+              Nenhum compartimento ativo cadastrado. Cadastre um cômodo usando o painel acima!
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = "";
+
+        sistema.ambientes.forEach(amb => {
+          const temAnomalia = sistema.alertasQueue.getQueue().some(al => al.ambiente === amb.nome);
+          const progressPorcet = Math.min(100, (amb.consumoDiario / amb.limiteAlerta) * 100);
+          
+          let alertBadgeClass = "";
+          let alertBadgeText = "";
+          let cardBgStyle = "";
+          let barColor = "";
+
+          if (temAnomalia) {
+            alertBadgeClass = "bg-rose-100 text-rose-700 border-rose-250 border";
+            alertBadgeText = "Anomalia (Vazamento!)";
+            cardBgStyle = "bg-gradient-to-tr from-rose-50/40 via-white to-white border-rose-250";
+            barColor = "bg-rose-500 shadow-sm shadow-rose-300";
+          } else if (amb.consumoDiario >= amb.limiteAlerta) {
+            alertBadgeClass = "bg-amber-100 text-amber-800 border bg-amber-250 border-amber-300";
+            alertBadgeText = "Limite Excedido";
+            cardBgStyle = "bg-gradient-to-tr from-amber-50/20 via-white to-white border-amber-350";
+            barColor = "bg-amber-500 shadow-sm shadow-amber-300";
+          } else {
+            alertBadgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200";
+            alertBadgeText = "Normal";
+            cardBgStyle = "bg-white border-slate-200 hover:border-slate-300/80";
+            barColor = "bg-blue-600 shadow-sm shadow-blue-200";
+          }
+
+          const cardHtml = `
+            <div class="p-5 rounded-2xl border transition-all duration-200 backdrop-blur-sm shadow-sm ${cardBgStyle}">
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <h4 class="font-bold text-sm text-slate-800 leading-tight truncate">${amb.nome}</h4>
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase select-none ${alertBadgeClass}">${alertBadgeText}</span>
+              </div>
+              
+              <div class="space-y-3.5 mt-4">
+                <!-- Barra de Progresso Visual -->
+                <div>
+                  <div class="flex justify-between text-[11px] font-semibold text-slate-500 mb-1">
+                    <span>Progresso Consumo</span>
+                    <span class="font-mono text-slate-700 font-bold">${amb.consumoDiario.toFixed(0)} / ${amb.limiteAlerta} L</span>
+                  </div>
+                  <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-150">
+                    <div class="${barColor} rounded-full h-2 transition-all duration-500" style="width: ${progressPorcet}%"></div>
+                  </div>
+                </div>
+
+                <!-- Históricos isolados -->
+                <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100">
+                  <div class="bg-slate-50 p-2 rounded-xl text-center border border-slate-150">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Média (Últimos 3)</p>
+                    <p class="text-xs font-mono font-bold text-slate-700 mt-0.5">${amb.historico.length >= 3 ? amb.getMediaUltimos3().toFixed(1) + 'L' : 'Falta Leituras'}</p>
+                  </div>
+                  <div class="bg-slate-50 p-2 rounded-xl text-center border border-slate-150">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Custo Isolado</p>
+                    <p class="text-xs font-mono font-bold text-slate-700 mt-0.5">R$ ${(amb.consumoDiario * sistema.taxaAguaPorLitro).toFixed(2)}</p>
+                  </div>
+                </div>
+
+                <div class="text-center text-[10px] text-slate-400 font-medium">
+                  Leituras computadas: ${amb.historico.length}
+                </div>
+              </div>
+            </div>
+          `;
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = cardHtml;
+          grid.appendChild(wrapper.firstElementChild);
+        });
+      }
+
+      // Renderiza tabela histórica com filtragem dinâmica
+      function renderizarHistorico() {
+        const tBody = document.getElementById('history-table-body');
+        const emptyState = document.getElementById('history-empty-state');
+        const filterEnv = document.getElementById('filter-env').value;
+        const filterStatus = document.getElementById('filter-status').value;
+
+        if (!tBody) return;
+
+        tBody.innerHTML = "";
+
+        // Aplica o robô analítico de filtros
+        let listFiltrada = [...sistema.historicoGeral];
+        
+        // Filtro por ambiente
+        if (filterEnv && filterEnv !== "todos") {
+          listFiltrada = listFiltrada.filter(reg => reg.ambiente === filterEnv);
+        }
+
+        // Filtro por diagnóstico
+        if (filterStatus && filterStatus !== "todos") {
+          if (filterStatus === "normal") {
+            listFiltrada = listFiltrada.filter(reg => reg.alertaVazamento === false);
+          } else if (filterStatus === "anomalia") {
+            listFiltrada = listFiltrada.filter(reg => reg.alertaVazamento === true);
+          }
+        }
+
+        if (listFiltrada.length === 0) {
+          emptyState.classList.remove('hidden');
+          return;
+        }
+
+        emptyState.classList.add('hidden');
+
+        // Ordenar por data mais recente no topo
+        listFiltrada.sort((a,b) => b.data - a.data);
+
+        listFiltrada.forEach(reg => {
+          let statusBadge = "";
+          if (reg.alertaVazamento) {
+            statusBadge = `<span class="bg-rose-100 text-rose-700 text-[10px] py-1 px-2.5 rounded-full border border-rose-250 font-bold flex items-center gap-1.5 w-fit" title="${reg.detalheAlerta}"><span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>Vazamento / Anômalo</span>`;
+          } else {
+            statusBadge = `<span class="bg-emerald-50 text-emerald-700 text-[10px] py-1 px-2.5 rounded-full border border-emerald-250 font-bold flex items-center gap-1.5 w-fit"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Normal</span>`;
+          }
+
+          const row = document.createElement('tr');
+          row.className = "hover:bg-slate-50 transition duration-150 border-b border-slate-100";
+          row.innerHTML = `
+            <td class="py-3.5 px-6 font-mono text-[11px] text-slate-500 font-bold select-all">${reg.id}</td>
+            <td class="py-3.5 px-6 shrink-0">
+              <div class="flex flex-col">
+                <span class="text-slate-700 font-semibold">${reg.data.toLocaleDateString('pt-BR')}</span>
+                <span class="text-[10px] text-slate-400 font-mono mt-0.5">${reg.data.toLocaleTimeString('pt-BR')}</span>
+              </div>
+            </td>
+            <td class="py-3.5 px-6 text-slate-800 font-bold">${reg.ambiente}</td>
+            <td class="py-3.5 px-6 font-mono text-slate-800 font-bold">${reg.litros.toFixed(1)} L</td>
+            <td class="py-3.5 px-6 font-mono text-slate-800 font-bold">R$ ${reg.custo.toFixed(4)}</td>
+            <td class="py-3.5 px-6">${statusBadge}</td>
+          `;
+          tBody.appendChild(row);
+        });
+      }
+
+
+      /************************************************************************
+       * 7. NOTIFICAÇÕES TOAST ENGENHADAS
+       ************************************************************************/
+      function mostrarToast(mensagem, tipo) {
+        const toast = document.getElementById('toast');
+        const msgEl = document.getElementById('toast-message');
+        const iconBg = document.getElementById('toast-icon-bg');
+        const icon = document.getElementById('toast-icon');
+
+        if (!toast) return;
+
+        msgEl.innerText = mensagem;
+
+        // Reset classes
+        iconBg.className = "p-1.5 rounded-full text-white ";
+
+        if (tipo === "success") {
+          iconBg.classList.add("bg-emerald-500");
+          icon.setAttribute("data-lucide", "check-circle-2");
+        } else if (tipo === "error") {
+          iconBg.classList.add("bg-rose-500");
+          icon.setAttribute("data-lucide", "alert-circle");
+        } else {
+          iconBg.classList.add("bg-blue-500");
+          icon.setAttribute("data-lucide", "info");
+        }
+
+        lucide.createIcons();
+
+        // Mostrar animação Entrada
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+          toast.classList.remove('translate-y-12', 'opacity-0');
+        }, 10);
+
+        // Ocultar após tempo útil
+        setTimeout(() => {
+          toast.classList.add('translate-y-12', 'opacity-0');
+          setTimeout(() => {
+            toast.classList.add('hidden');
+          }, 300);
+        }, 3200);
+      }
+
+
+      /************************************************************************
+       * 8. UTC LIVE CLOCK & COMPORTAMENTO DE RESPONSIVIDADE DO MENU MOBILE
+       ************************************************************************/
+      function iniciarRelogio() {
+        const clockEl = document.getElementById('live-clock');
+        setInterval(() => {
+          const now = new Date();
+          clockEl.innerText = now.toLocaleTimeString('pt-BR');
+        }, 1000);
+      }
+
+      // Handler do Hamburger Mobile
+      document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+        const navLinks = document.getElementById('nav-links');
+        navLinks.classList.toggle('hidden');
+      });
+
+
+      /************************************************************************
+       * 9. DISPARO INICIAL (ONBOARDING LOAD)
+       ************************************************************************/
+      window.addEventListener('DOMContentLoaded', () => {
+        // 1. Semear histórico inicial
+        semearDadosIniciais();
+        
+        // 2. Popular o Simulador de Sensor
+        popularDropdownAmbientes();
+
+        // 3. Renderizar todos os elementos
+        renderizarTelas();
+
+        // 4. Iniciar relógio UTC
+        iniciarRelogio();
+      });
+
+    </script>
+  </body>
+</html>

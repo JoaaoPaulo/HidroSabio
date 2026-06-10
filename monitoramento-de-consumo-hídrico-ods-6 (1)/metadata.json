@@ -1,0 +1,6 @@
+{
+  "name": "Monitoramento de Consumo Hídrico ODS 6",
+  "description": "Sistema de gestão e monitoramento do consumo de água para conformidade com a ODS 6 da ONU.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
