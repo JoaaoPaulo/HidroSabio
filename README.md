@@ -1,20 +1,38 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# HidroSábio — Monitoramento de Consumo Hídrico (ODS 6)
 
-# Run and deploy your AI Studio app
+Dashboard web para acompanhar o consumo de água por ambiente (cozinha, banheiro, jardim etc.), ligado à **ODS 6 da ONU — Água Potável e Saneamento**. A ideia é tornar o consumo visível, avisar quando um ambiente passa do limite e incentivar o uso consciente da água.
 
-This contains everything you need to run your app locally.
+## Funcionalidades
 
-View your app in AI Studio: https://ai.studio/apps/f2801591-90ab-43a6-b085-65c091818d3a
+- **Início & ODS 6** — apresentação da ODS 6, configurações base (como o preço da água), economizômetro e indicadores do valor da água.
+- **Dashboard** — gráfico de consumo por ambiente e fila de alertas de consumo excessivo.
+- **Sensor IoT & Ambientes** — cadastro de ambientes com limite de consumo diário e um simulador de sensor IoT para registrar leituras.
+- **Histórico** — registro consolidado de todas as leituras, com opção de limpar.
+- **Relatórios** — gerador de relatório técnico, com cópia do texto ou download do arquivo.
 
-## Run Locally
+Os dados ficam em memória no navegador (são recarregados com dados de exemplo ao abrir a página). Internamente o projeto usa as classes `Ambiente` e `FilaAlertas` (uma fila FIFO: o alerta mais antigo é resolvido primeiro).
 
-**Prerequisites:**  Node.js
+## Tecnologias
 
+- HTML + JavaScript
+- Tailwind CSS v4
+- Vite (servidor de desenvolvimento e build)
+- Ícones [Lucide](https://lucide.dev)
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Como rodar
+
+Pré-requisito: [Node.js](https://nodejs.org) 18 ou superior.
+
+```bash
+npm install
+npm run dev
+```
+
+Acesse `http://localhost:3000`.
+
+Para gerar a versão de produção na pasta `dist/`:
+
+```bash
+npm run build
+npm run preview
+```
